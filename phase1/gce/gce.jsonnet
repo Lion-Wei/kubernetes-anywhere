@@ -148,6 +148,7 @@ function(cfg)
             "k8s-cni-plugin": if std.objectHas(p3, "cni") then p3.cni else "",
           } + if p2.provider == "kubeadm" then {
             "k8s-kubeadm-token": "${var.kubeadm_token}",
+            "kube-proxy-mode": "%(proxy_mode)s" % p2,
             "k8s-kubeadm-version": "%(version)s" % p2.kubeadm,
             "k8s-kubernetes-version": "%(kubernetes_version)s" % p2,
             "k8s-kubelet-version": "%(kubelet_version)s" % p2,
@@ -177,6 +178,7 @@ function(cfg)
             "k8s-master-ip": "${google_compute_instance.%(master_instance)s.network_interface.0.address}" % names,
           } + if p2.provider == "kubeadm" then {
             "k8s-kubeadm-token": "${var.kubeadm_token}",
+            "kube-proxy-mode": "%(proxy_mode)s" % p2,
             "k8s-kubeadm-version": "%(version)s" % p2.kubeadm,
             "k8s-kubernetes-version": "%(kubernetes_version)s" % p2,
             "k8s-kubelet-version": "%(kubelet_version)s" % p2,

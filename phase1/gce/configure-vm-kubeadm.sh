@@ -5,6 +5,7 @@ KUBEADM_VERSION=$(get_metadata "k8s-kubeadm-version")
 KUBERNETES_VERSION=$(get_metadata "k8s-kubernetes-version")
 KUBELET_VERSION=$(get_metadata "k8s-kubelet-version")
 ENABLE_CLOUD_PROVIDER=$(get_metadata "k8s-enable-cloud-provider")
+KUBEPROXY_MODE=$(get_metadata "kube-proxy-mode")
 KUBEADM_DIR=/etc/kubeadm
 KUBEADM_CONFIG_FILE=$KUBEADM_DIR/kubeadm.yaml
 
@@ -90,6 +91,7 @@ api:
 networking:
   podSubnet: "${POD_NETWORK_CIDR}"
 kubernetesVersion: "${KUBERNETES_VERSION}"
+kubeproxyMode: "${KUBEPROXY_MODE}"
 token: "${TOKEN}"
 EOF
 
