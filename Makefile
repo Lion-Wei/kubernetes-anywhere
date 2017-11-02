@@ -7,6 +7,7 @@ SHELL=/bin/bash
 IMAGE_NAME?=kubernetes-anywhere
 IMAGE_VERSION?=v0.0.1
 
+#check the env-lw
 # sorry windows and non amd64
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
@@ -19,6 +20,8 @@ endif
 CONF_TOOL_VERSION = 4.6
 KCONFIG_FILES = $(shell find . -name 'Kconfig')
 
+#read and handle config file-lw
+#get cluster info-lw
 CONFIG_FILE ?= .config
 CONFIG_FILE_ABS := $(realpath $(CONFIG_FILE))
 export CONFIG_JSON_FILE := $(CONFIG_FILE_ABS).json
@@ -39,6 +42,7 @@ menuconfig:
 ${CONFIG_FILE_ABS}: $(KCONFIG_FILES)
 	$(MAKE) config
 
+#transform file to json
 ${CONFIG_JSON_FILE}: ${CONFIG_FILE_ABS}
 	util/config_to_json $< > $@
 
@@ -48,11 +52,13 @@ echo-config: ${CONFIG_JSON_FILE}
 deploy-cluster destroy-cluster: ${CONFIG_JSON_FILE}
 	$(MAKE) do WHAT=$@
 
+#升级，直接调用do文件-lw
 upgrade-master: ${CONFIG_JSON_FILE}
 	( cd "phase2/$(BOOTSTRAP_PROVIDER)"; ./do $@ )
 
 # For maximum usefulness, use this target with "make -s" to silence any trace output, e.g.:
 #   $ export KUBECONFIG=$(make -s kubeconfig-path)
+#获取集群配置文件-lw
 kubeconfig-path: ${CONFIG_JSON_FILE}
 	@$(eval KUBECONFIG_PATH := $(shell pwd)/phase1/$(CLOUD_PROVIDER)/$(CLUSTER_DIR)/kubeconfig.json)
 	@if [ ! -e "$(KUBECONFIG_PATH)" ]; then \
@@ -61,15 +67,20 @@ kubeconfig-path: ${CONFIG_JSON_FILE}
 	fi
 	@echo $(KUBECONFIG_PATH)
 
+#检查起来了没-lw
+# /util/validate
 validate-cluster-up: ${CONFIG_JSON_FILE}
 	KUBECONFIG="$$(pwd)/phase1/$(CLOUD_PROVIDER)/$(CLUSTER_DIR)/kubeconfig.json" ./util/validate
 
+# 检查节点情况，validate也能做
 validate-node-ready: ${CONFIG_JSON_FILE}
 	KUBECONFIG="$$(pwd)/phase1/$(CLOUD_PROVIDER)/$(CLUSTER_DIR)/kubeconfig.json" NODE_READINESS_CHECK=y ./util/validate
 
+#调用phase3中的do deploy命令执行addon
 addons: ${CONFIG_JSON_FILE}
 	KUBECONFIG="$$(pwd)/phase1/$(CLOUD_PROVIDER)/$(CLUSTER_DIR)/kubeconfig.json" ./phase3/do deploy
 
+#创建集群-检查集群状况-addon-检查节点状况
 deploy: | deploy-cluster  validate-cluster-up  addons  validate-node-ready
 destroy: | destroy-cluster
 

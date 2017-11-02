@@ -91,13 +91,18 @@ api:
 networking:
   podSubnet: "${POD_NETWORK_CIDR}"
 kubernetesVersion: "${KUBERNETES_VERSION}"
-kubeproxyMode: "${KUBEPROXY_MODE}"
 token: "${TOKEN}"
 EOF
 
     if [[ "${ENABLE_CLOUD_PROVIDER}" == true ]]; then
       cat <<EOF |tee -a $KUBEADM_CONFIG_FILE
 cloudProvider: "${CLOUD_PROVIDER}"
+EOF
+    fi
+
+    if [[ "${KUBEPROXY_MODE}" == "ipvs" ]]; then
+        cat <<EOF |tee -a $KUBEADM_CONFIG_FILE
+featureGates: "SupportIPVSProxyMode=true"
 EOF
     fi
 
